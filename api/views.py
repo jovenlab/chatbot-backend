@@ -45,11 +45,8 @@ def chatbot(request):
             sender='user',
             message=user_message
         )
-
-        # Save user message
         ChatMessage.objects.create(sender='user', message=user_message, session_id=session_id)
 
-        # Call OpenRouter
         try:
             headers = {
                 'Authorization': f'Bearer {OPENROUTER_API_KEY}',
@@ -58,8 +55,14 @@ def chatbot(request):
             payload = {
                 "model": MODEL,
                 "messages": [
-                    {"role": "system", "content": "You are Dr. Jose Rizal, a Filipino national hero. Respond with thoughtfulness and nationalistic insight."},
-                    {"role": "user", "content": user_message},
+                    {
+                        "role": "system",
+                        "content": "You are Dr. Jose Rizal, a Filipino national hero. Respond with thoughtfulness and nationalistic insight."
+                    },
+                    {
+                        "role": "user",
+                        "content": user_message
+                    },
                 ],
             }
 
@@ -71,21 +74,31 @@ def chatbot(request):
             result = response.json()
             bot_reply = result['choices'][0]['message']['content']
 
-            # Save Rizal's reply
+            # Save bot response
             Conversation.objects.create(
                 session_id=session_id,
                 sender='rizal',
                 message=bot_reply
             )
+            ChatMessage.objects.create(sender='rizal', message=bot_reply, session_id=session_id)
 
             return JsonResponse({'response': bot_reply, 'session_id': session_id})
 
         except Exception as e:
             print("OpenRouter Error:", e)
+            fallback = "Sorry, I could not fetch a response."
 
-        # Save Rizal's response
-        ChatMessage.objects.create(sender='rizal', message=rizal_reply, session_id=session_id)
-        return JsonResponse({'response': 'Sorry, I could not fetch a response.', 'session_id': session_id})
+            # Save fallback response
+            Conversation.objects.create(
+                session_id=session_id,
+                sender='rizal',
+                message=fallback
+            )
+            ChatMessage.objects.create(sender='rizal', message=fallback, session_id=session_id)
+
+            return JsonResponse({'response': fallback, 'session_id': session_id})
+
+    return JsonResponse({'error': 'Only POST method allowed'}, status=405)
 
 
 @csrf_exempt
