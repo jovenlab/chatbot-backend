@@ -47,7 +47,7 @@ def chatbot(request):
         )
 
         # Save user message
-        ChatMessage.objects.create(sender='user', message=user_message)
+        ChatMessage.objects.create(sender='user', message=user_message, session_id=session_id)
 
         # Call OpenRouter
         try:
@@ -84,5 +84,18 @@ def chatbot(request):
             print("OpenRouter Error:", e)
 
         # Save Rizal's response
-        ChatMessage.objects.create(sender='rizal', message=rizal_reply)
+        ChatMessage.objects.create(sender='rizal', message=rizal_reply, session_id=session_id)
         return JsonResponse({'response': 'Sorry, I could not fetch a response.', 'session_id': session_id})
+
+
+@csrf_exempt
+def get_conversation(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        session_id = data.get('session_id')
+
+        messages = ChatMessage.objects.filter(session_id=session_id).order_by('timestamp')
+        message_list = [
+            {'sender': msg.sender, 'text': msg.message} for msg in messages
+        ]
+        return JsonResponse({'messages': message_list})

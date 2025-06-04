@@ -5,4 +5,5 @@ urlpatterns = [
     path('hello/', hello),
     path('register/', register_user),
     path("chat/", chatbot, name="chatbot"),
+    path('history/', get_conversation),
 ]
