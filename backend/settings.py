@@ -131,16 +131,13 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-
-
 # Allow Next.js frontend to access the API
 CORS_ALLOWED_ORIGINS = [
-    "https://chatbot-alpha-nine-39.vercel.app",  # Next.js dev server
+    "https://chatbot-alpha-nine-39.vercel.app/",  # Next.js dev server
 ]
 
 # Optional: allow cookies/auth tokens (if needed)
 CORS_ALLOW_CREDENTIALS = True
-
 
 
 REST_FRAMEWORK = {
