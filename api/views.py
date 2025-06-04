@@ -35,7 +35,31 @@ def chatbot(request):
         data = json.loads(request.body)
         user_message = data.get('message')
 
-        # Generate response (e.g., static, GPT, or rules)
-        rizal_response = f"Rizal says: I understand your concern about '{user_message}'. Let's reflect on it together."
+        headers = {
+            'Authorization': f'Bearer {OPENROUTER_API_KEY}',
+            'Content-Type': 'application/json',
+        }
 
-        return JsonResponse({'response': rizal_response})
+        payload = {
+            "model": MODEL,
+            "messages": [
+                {"role": "system", "content": "You are Jose Rizal, a national hero and intellectual. Respond with wisdom from your writings and ideals."},
+                {"role": "user", "content": user_message},
+            ],
+        }
+
+        try:
+            response = requests.post(
+                "https://openrouter.ai/api/v1/chat/completions",
+                headers=headers,
+                data=json.dumps(payload)
+            )
+
+            result = response.json()
+            bot_reply = result['choices'][0]['message']['content']
+
+            return JsonResponse({'response': bot_reply})
+
+        except Exception as e:
+            print('OpenRouter error:', e)
+            return JsonResponse({'response': 'Sorry, something went wrong contacting OpenRouter.'}, status=500)
