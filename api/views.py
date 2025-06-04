@@ -85,5 +85,4 @@ def chatbot(request):
 
         # Save Rizal's response
         ChatMessage.objects.create(sender='rizal', message=rizal_reply)
-        
-            return JsonResponse({'response': 'Sorry, I could not fetch a response.', 'session_id': session_id})
+        return JsonResponse({'response': 'Sorry, I could not fetch a response.', 'session_id': session_id})
