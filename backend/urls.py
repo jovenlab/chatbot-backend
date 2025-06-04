@@ -16,13 +16,13 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from django.http import HttpResponse
+from django.http import JsonResponse
 
-def index(request):
-    return HttpResponse("Jose Rizal Chatbot Backend is running!")
+def root_view(request):
+    return JsonResponse({"status": "Jose Rizal Chatbot Backend is running!"})
 
 urlpatterns = [
-    path("", index),
-    path('admin/', admin.site.urls),
-    path('api/', include('api.urls')),
+    path("", root_view),  
+    path("admin/", admin.site.urls),
+    path("api/", include("api.urls")),  # Make sure your app name matches
 ]
