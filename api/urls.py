@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import hello, register_user, chatbot
+from .views import hello, register_user, chatbot, get_conversation
 
 urlpatterns = [
     path('hello/', hello),
