@@ -11,6 +11,9 @@ import json
 import requests
 import os
 
+from .models import Conversation
+import uuid
+
 OPENROUTER_API_KEY = os.environ.get('OPENROUTER_API_KEY')
 MODEL = 'mistralai/mistral-7b-instruct'
 # Create your views here.
@@ -34,32 +37,46 @@ def chatbot(request):
     if request.method == 'POST':
         data = json.loads(request.body)
         user_message = data.get('message')
+        session_id = data.get('session_id') or str(uuid.uuid4())
 
-        headers = {
-            'Authorization': f'Bearer {OPENROUTER_API_KEY}',
-            'Content-Type': 'application/json',
-        }
+        # Save user's message
+        Conversation.objects.create(
+            session_id=session_id,
+            sender='user',
+            message=user_message
+        )
 
-        payload = {
-            "model": MODEL,
-            "messages": [
-                {"role": "system", "content": "You are Jose Rizal, a national hero and intellectual. Respond with wisdom from your writings and ideals."},
-                {"role": "user", "content": user_message},
-            ],
-        }
-
+        # Call OpenRouter
         try:
+            headers = {
+                'Authorization': f'Bearer {OPENROUTER_API_KEY}',
+                'Content-Type': 'application/json',
+            }
+            payload = {
+                "model": MODEL,
+                "messages": [
+                    {"role": "system", "content": "You are Dr. Jose Rizal, a Filipino national hero. Respond with thoughtfulness and nationalistic insight."},
+                    {"role": "user", "content": user_message},
+                ],
+            }
+
             response = requests.post(
                 "https://openrouter.ai/api/v1/chat/completions",
                 headers=headers,
                 data=json.dumps(payload)
             )
-
             result = response.json()
             bot_reply = result['choices'][0]['message']['content']
 
-            return JsonResponse({'response': bot_reply})
+            # Save Rizal's reply
+            Conversation.objects.create(
+                session_id=session_id,
+                sender='rizal',
+                message=bot_reply
+            )
+
+            return JsonResponse({'response': bot_reply, 'session_id': session_id})
 
         except Exception as e:
-            print('OpenRouter error:', e)
-            return JsonResponse({'response': 'Sorry, something went wrong contacting OpenRouter.'}, status=500)
+            print("OpenRouter Error:", e)
+            return JsonResponse({'response': 'Sorry, I could not fetch a response.', 'session_id': session_id})
