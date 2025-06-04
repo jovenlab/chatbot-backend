@@ -135,7 +135,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ALLOWED_ORIGINS = [
     "https://chatbot-alpha-nine-39.vercel.app",  # Next.js dev server
     "https://chatbot-blwpdc2vz-jovenlabs-projects.vercel.app",
-    "https://chatbot-98ketulm2-jovenlabs-projects.vercel.app/"
+    "https://chatbot-98ketulm2-jovenlabs-projects.vercel.app"
 ]
 # 
 
