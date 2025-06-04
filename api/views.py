@@ -11,7 +11,7 @@ import json
 import requests
 import os
 
-from .models import Conversation
+from .models import Conversation, ChatMessage
 import uuid
 
 OPENROUTER_API_KEY = os.environ.get('OPENROUTER_API_KEY')
