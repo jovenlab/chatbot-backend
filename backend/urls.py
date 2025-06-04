@@ -24,5 +24,5 @@ def root_view(request):
 urlpatterns = [
     path("", root_view),  
     path("admin/", admin.site.urls),
-    path("api/", include("api.urls")),  # Make sure your app name matches
+    path("api/", include("api.urls")),
 ]
