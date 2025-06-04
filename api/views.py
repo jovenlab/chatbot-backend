@@ -46,6 +46,9 @@ def chatbot(request):
             message=user_message
         )
 
+        # Save user message
+        ChatMessage.objects.create(sender='user', message=user_message)
+
         # Call OpenRouter
         try:
             headers = {
@@ -79,4 +82,8 @@ def chatbot(request):
 
         except Exception as e:
             print("OpenRouter Error:", e)
+
+        # Save Rizal's response
+        ChatMessage.objects.create(sender='rizal', message=rizal_reply)
+        
             return JsonResponse({'response': 'Sorry, I could not fetch a response.', 'session_id': session_id})
