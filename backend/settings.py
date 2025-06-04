@@ -28,7 +28,8 @@ SECRET_KEY = 'django-insecure-e0wu24omw(*pj_0n4d9yi&)ad$wh*6_w3j*761xs_aijxnjact
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['https://chatbot-alpha-nine-39.vercel.app/']
+# ALLOWED_HOSTS = ['https://chatbot-alpha-nine-39.vercel.app/']
+ALLOWED_HOSTS = ['chatbot-backend-wipk.onrender.com', 'localhost', '127.0.0.1']
 
 
 # Application definition
