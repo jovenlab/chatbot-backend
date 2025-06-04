@@ -12,7 +12,7 @@ import requests
 import os
 
 OPENROUTER_API_KEY = os.environ.get('OPENROUTER_API_KEY')
-MODEL = 'mistralai/mixtral-8x7b'
+MODEL = 'openrouter/gpt-3.5-turbo'
 # Create your views here.
 
 @api_view(['GET'])
