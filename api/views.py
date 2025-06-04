@@ -8,6 +8,11 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import json
 
+import requests
+import os
+
+OPENROUTER_API_KEY = os.environ.get('OPENROUTER_API_KEY')
+MODEL = 'mistralai/mixtral-8x7b'
 # Create your views here.
 
 @api_view(['GET'])
