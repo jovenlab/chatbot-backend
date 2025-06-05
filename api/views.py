@@ -43,11 +43,12 @@ def chatbot(request):
 
         # Save user's message
         Conversation.objects.create(
+            
             session_id=session_id,
             sender='user',
             message=user_message
         )
-        ChatMessage.objects.create(sender='user', message=user_message, session_id=session_id)
+        ChatMessage.objects.create(sender='user', message=user_message, session_id=session_id, user=user,)
 
         try:
             headers = {
@@ -82,7 +83,7 @@ def chatbot(request):
                 sender='rizal',
                 message=bot_reply
             )
-            ChatMessage.objects.create(sender='rizal', message=bot_reply, session_id=session_id)
+            ChatMessage.objects.create(sender='rizal', message=bot_reply, session_id=session_id, user=user)
 
             return JsonResponse({'response': bot_reply, 'session_id': session_id})
 
