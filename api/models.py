@@ -1,5 +1,7 @@
 from django.db import models
 
+from django.contrib.auth.models import User
+
 class Conversation(models.Model):
     session_id = models.CharField(max_length=100)
     sender = models.CharField(max_length=10)  # 'user' or 'rizal'
@@ -16,7 +18,7 @@ class ChatMessage(models.Model):
         ('user', 'User'),
         ('rizal', 'Rizal'),
     )
-
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     sender = models.CharField(max_length=10, choices=SENDER_CHOICES)
     message = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)

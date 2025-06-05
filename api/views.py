@@ -39,6 +39,8 @@ def chatbot(request):
         user_message = data.get('message')
         session_id = data.get('session_id') or str(uuid.uuid4())
 
+        user = request.user if request.user.is_authenticated else None
+
         # Save user's message
         Conversation.objects.create(
             session_id=session_id,
@@ -106,16 +108,15 @@ def get_conversation(request):
     if request.method == 'POST':
         data = json.loads(request.body)
         session_id = data.get('session_id')
-    elif request.method == 'GET':
-        session_id = request.GET.get('session_id')
-    else:
-        return JsonResponse({'error': 'Method not allowed'}, status=405)
 
-    if not session_id:
-        return JsonResponse({'error': 'Missing session_id'}, status=400)
+        user = request.user if request.user.is_authenticated else None
 
-    messages = ChatMessage.objects.filter(session_id=session_id).order_by('timestamp')
-    message_list = [
-        {'sender': msg.sender, 'text': msg.message} for msg in messages
-    ]
-    return JsonResponse({'messages': message_list})
+        if user:
+            messages = ChatMessage.objects.filter(user=user).order_by('timestamp')
+        else:
+            messages = ChatMessage.objects.filter(session_id=session_id).order_by('timestamp')
+
+        message_list = [
+            {'sender': msg.sender, 'text': msg.message} for msg in messages
+        ]
+        return JsonResponse({'messages': message_list})
