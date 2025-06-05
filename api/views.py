@@ -38,24 +38,25 @@ def register_user(request):
 @csrf_exempt
 def chatbot(request):
     if request.method == 'POST':
-        try:
-            data = json.loads(request.body)
-        except json.JSONDecodeError:
-            return JsonResponse({'error': 'Invalid JSON'}, status=400)
-
+        data = json.loads(request.body)
         user_message = data.get('message')
         session_id = data.get('session_id') or str(uuid.uuid4())
+
+        # Attach the user if authenticated
         user = request.user if request.user.is_authenticated else None
 
-        if not user_message:
-            return JsonResponse({'error': 'Message is required'}, status=400)
-
-        # Save user message
+        # Save user's message
         ChatMessage.objects.create(
-            user=user,
-            session_id=session_id,
             sender='user',
-            message=user_message
+            message=user_message,
+            session_id=session_id,
+            user=user
+        )
+
+        Conversation.objects.create(
+            sender='user',
+            message=user_message,
+            session_id=session_id
         )
 
         try:
@@ -63,6 +64,7 @@ def chatbot(request):
                 'Authorization': f'Bearer {OPENROUTER_API_KEY}',
                 'Content-Type': 'application/json',
             }
+
             payload = {
                 "model": MODEL,
                 "messages": [
@@ -82,24 +84,45 @@ def chatbot(request):
                 headers=headers,
                 data=json.dumps(payload)
             )
-            response.raise_for_status()  # Raise an exception for HTTP errors
 
             result = response.json()
             bot_reply = result['choices'][0]['message']['content']
 
+            # Save bot reply
+            ChatMessage.objects.create(
+                sender='rizal',
+                message=bot_reply,
+                session_id=session_id,
+                user=user
+            )
+
+            Conversation.objects.create(
+                sender='rizal',
+                message=bot_reply,
+                session_id=session_id
+            )
+
+            return JsonResponse({'response': bot_reply, 'session_id': session_id})
+
         except Exception as e:
             print("OpenRouter Error:", e)
-            bot_reply = "Sorry, I could not fetch a response."
+            fallback = "Sorry, I could not fetch a response."
 
-        # Save bot response
-        ChatMessage.objects.create(
-            user=user,
-            session_id=session_id,
-            sender='rizal',
-            message=bot_reply
-        )
+            # Save fallback reply
+            ChatMessage.objects.create(
+                sender='rizal',
+                message=fallback,
+                session_id=session_id,
+                user=user
+            )
 
-        return JsonResponse({'response': bot_reply, 'session_id': session_id})
+            Conversation.objects.create(
+                sender='rizal',
+                message=fallback,
+                session_id=session_id
+            )
+
+            return JsonResponse({'response': fallback, 'session_id': session_id})
 
     return JsonResponse({'error': 'Only POST method allowed'}, status=405)
 
@@ -108,19 +131,24 @@ def chatbot(request):
 @csrf_exempt
 def get_conversation(request):
     if request.method == 'POST':
+        if not request.user.is_authenticated:
+            return JsonResponse({'error': 'Not authenticated'}, status=403)
+
         data = json.loads(request.body)
         session_id = data.get('session_id')
 
-        user = request.user if request.user.is_authenticated else None
-
+        # Get only messages belonging to this session AND this user
         messages = ChatMessage.objects.filter(
             session_id=session_id,
-            user=user
+            user=request.user
         ).order_by('timestamp')
 
         message_list = [
             {'sender': msg.sender, 'text': msg.message}
             for msg in messages
         ]
+
         return JsonResponse({'messages': message_list})
+
+    return JsonResponse({'error': 'Only POST method allowed'}, status=405)
 
