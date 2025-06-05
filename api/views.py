@@ -38,20 +38,25 @@ def register_user(request):
 @csrf_exempt
 def chatbot(request):
     if request.method == 'POST':
-        data = json.loads(request.body)
+        try:
+            data = json.loads(request.body)
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON'}, status=400)
+
         user_message = data.get('message')
         session_id = data.get('session_id') or str(uuid.uuid4())
-
         user = request.user if request.user.is_authenticated else None
 
-        # Save user's message
-        Conversation.objects.create(
-            
+        if not user_message:
+            return JsonResponse({'error': 'Message is required'}, status=400)
+
+        # Save user message
+        ChatMessage.objects.create(
+            user=user,
             session_id=session_id,
             sender='user',
             message=user_message
         )
-        ChatMessage.objects.create(sender='user', message=user_message, session_id=session_id, user=user,)
 
         try:
             headers = {
@@ -77,34 +82,27 @@ def chatbot(request):
                 headers=headers,
                 data=json.dumps(payload)
             )
+            response.raise_for_status()  # Raise an exception for HTTP errors
+
             result = response.json()
             bot_reply = result['choices'][0]['message']['content']
 
-            # Save bot response
-            Conversation.objects.create(
-                session_id=session_id,
-                sender='rizal',
-                message=bot_reply
-            )
-            ChatMessage.objects.create(sender='rizal', message=bot_reply, session_id=session_id, user=user)
-
-            return JsonResponse({'response': bot_reply, 'session_id': session_id})
-
         except Exception as e:
             print("OpenRouter Error:", e)
-            fallback = "Sorry, I could not fetch a response."
+            bot_reply = "Sorry, I could not fetch a response."
 
-            # Save fallback response
-            Conversation.objects.create(
-                session_id=session_id,
-                sender='rizal',
-                message=fallback
-            )
-            ChatMessage.objects.create(sender='rizal', message=fallback, session_id=session_id, user=user)
+        # Save bot response
+        ChatMessage.objects.create(
+            user=user,
+            session_id=session_id,
+            sender='rizal',
+            message=bot_reply
+        )
 
-            return JsonResponse({'response': fallback, 'session_id': session_id})
+        return JsonResponse({'response': bot_reply, 'session_id': session_id})
 
     return JsonResponse({'error': 'Only POST method allowed'}, status=405)
+
 
 
 @csrf_exempt
