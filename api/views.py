@@ -113,12 +113,14 @@ def get_conversation(request):
 
         user = request.user if request.user.is_authenticated else None
 
-        if user:
-            messages = ChatMessage.objects.filter(user=user).order_by('timestamp')
-        else:
-            messages = ChatMessage.objects.filter(session_id=session_id).order_by('timestamp')
+        messages = ChatMessage.objects.filter(
+            session_id=session_id,
+            user=user
+        ).order_by('timestamp')
 
         message_list = [
-            {'sender': msg.sender, 'text': msg.message} for msg in messages
+            {'sender': msg.sender, 'text': msg.message}
+            for msg in messages
         ]
         return JsonResponse({'messages': message_list})
+
