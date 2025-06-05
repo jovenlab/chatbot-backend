@@ -100,7 +100,7 @@ def chatbot(request):
                 sender='rizal',
                 message=fallback
             )
-            ChatMessage.objects.create(sender='rizal', message=fallback, session_id=session_id)
+            ChatMessage.objects.create(sender='rizal', message=fallback, session_id=session_id, user=user)
 
             return JsonResponse({'response': fallback, 'session_id': session_id})
 
