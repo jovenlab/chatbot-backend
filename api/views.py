@@ -14,6 +14,9 @@ import os
 from .models import Conversation, ChatMessage
 import uuid
 
+from django.contrib.auth.decorators import login_required
+from django.utils.decorators import method_decorator
+
 OPENROUTER_API_KEY = os.environ.get('OPENROUTER_API_KEY')
 MODEL = 'mistralai/mistral-7b-instruct'
 # Create your views here.
